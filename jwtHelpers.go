@@ -5,7 +5,8 @@ import (
 	"time"
 )
 
-func createJWT(username string, issuer string, signingKey []byte) (string, error) {
+// creates JWT with EDDSA is signing method, inputted key should be the private key, and public key used to verify
+func createJWT(username string, issuer string, privKey []byte) (string, error) {
 	claims := jwt.RegisteredClaims{
 		Issuer:    issuer,
 		Subject:   username,
@@ -15,13 +16,19 @@ func createJWT(username string, issuer string, signingKey []byte) (string, error
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		ID:        "",
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
 
-	signedToken, err := token.SignedString(signingKey)
+	// make sure that the private key is for EDDSA, ie a ed25519 private key
+	signedToken, err := token.SignedString(privKey)
 
 	if err != nil {
 		return "", err
 	}
 
 	return signedToken, nil
+}
+
+func validateJWT(username string, issuer string, pubKey []byte) (bool, error) {
+
+	return true, nil
 }
